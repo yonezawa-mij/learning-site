@@ -1,6 +1,6 @@
 import Link from 'next/link'
-import { Navbar } from '@/components/Navbar'
-import { Footer } from '@/components/Footer'
+import { AppShell } from '@/components/AppShell'
+import { PageHeader } from '@/components/PageHeader'
 import { SubscribeButton, ManageButton } from '@/components/BillingButtons'
 import { getCurrentUser, userIsPremium } from '@/lib/auth'
 import { syncCheckoutSessionAction } from '@/app/actions/platform'
@@ -20,51 +20,52 @@ export default async function PricingPage({ searchParams }: Props) {
   const premium = userIsPremium(user)
 
   return (
-    <>
-      <Navbar />
-      <main className="flex-1 py-20">
-        <div className="mx-auto max-w-3xl px-6">
-          <div className="text-center mb-12">
-            <h1 className="text-3xl font-bold">有料会員プラン</h1>
-            <p className="mt-3 text-muted">すべてのコース・レッスン・進捗管理機能が利用できます</p>
+    <AppShell subNav={Boolean(user)}>
+      <div className="mx-auto max-w-3xl px-6 py-10 sm:py-16">
+        <PageHeader
+          eyebrow="Pricing"
+          title="有料会員プラン"
+          description="すべてのコース・レッスン・進捗管理機能が利用できます"
+        />
+
+        {params.canceled === '1' && (
+          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            お支払いはキャンセルされました。
           </div>
+        )}
+        {params.success === '1' && premium && (
+          <div className="mb-6 rounded-xl border border-emerald-200 bg-accent-soft px-4 py-3 text-sm text-emerald-800">
+            有料会員への加入が完了しました。コース学習を開始できます。
+          </div>
+        )}
 
-          {params.canceled === '1' && (
-            <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              お支払いはキャンセルされました。
-            </div>
-          )}
-          {params.success === '1' && premium && (
-            <div className="mb-6 rounded-xl border border-emerald-200 bg-accent-soft px-4 py-3 text-sm text-emerald-800">
-              有料会員への加入が完了しました。コース学習を開始できます。
-            </div>
-          )}
-
-          <div className="rounded-3xl border-2 border-accent/30 bg-white p-8 shadow-sm">
-            <p className="text-sm font-semibold text-accent uppercase tracking-wide">Standard</p>
+        <div className="card overflow-hidden border-emerald-200/60 shadow-sm">
+          <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 px-8 py-6 text-white">
+            <p className="text-sm font-semibold text-emerald-100 uppercase tracking-wide">Standard Plan</p>
             <p className="mt-2 text-4xl font-bold">{MEMBERSHIP_PRICE_LABEL}</p>
-            <p className="mt-1 text-sm text-muted">税込 · 自動更新 · いつでも解約可能</p>
-
-            <ul className="mt-8 space-y-3">
+            <p className="mt-1 text-sm text-emerald-100">税込 · 自動更新 · いつでも解約可能</p>
+          </div>
+          <div className="p-8">
+            <ul className="space-y-3">
               {MEMBERSHIP_FEATURES.map((f) => (
-                <li key={f} className="flex items-start gap-2 text-sm">
-                  <span className="text-accent mt-0.5">✓</span>
+                <li key={f} className="flex items-start gap-3 text-sm">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent text-xs">✓</span>
                   {f}
                 </li>
               ))}
             </ul>
 
-            <div className="mt-8">
+            <div className="mt-8 pt-6 border-t border-border">
               {!user ? (
                 <div className="space-y-3">
-                  <Link href="/register?next=/pricing" className="block w-full rounded-full bg-accent py-3.5 text-center text-sm font-semibold text-white hover:bg-emerald-700">
+                  <Link href="/register?next=/pricing" className="btn-primary w-full block text-center !py-3.5">
                     まず無料でアカウント作成
                   </Link>
                   <p className="text-xs text-center text-muted">アカウント作成後、こちらからプランに加入できます</p>
                 </div>
               ) : premium ? (
                 <div className="space-y-3">
-                  <Link href="/courses" className="block w-full rounded-full bg-accent py-3.5 text-center text-sm font-semibold text-white hover:bg-emerald-700">
+                  <Link href="/courses" className="btn-primary w-full block text-center !py-3.5">
                     コースを始める
                   </Link>
                   <ManageButton />
@@ -75,8 +76,7 @@ export default async function PricingPage({ searchParams }: Props) {
             </div>
           </div>
         </div>
-      </main>
-      <Footer />
-    </>
+      </div>
+    </AppShell>
   )
 }

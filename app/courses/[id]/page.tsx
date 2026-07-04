@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Navbar } from '@/components/Navbar'
-import { Footer } from '@/components/Footer'
+import { AppShell } from '@/components/AppShell'
+import { Breadcrumb } from '@/components/Breadcrumb'
 import { ProgressBar } from '@/components/ProgressBar'
 import { requirePremium } from '@/lib/guards'
 import { getCourseById, getLessonProgress } from '@/lib/courses'
@@ -16,56 +16,76 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
 
   const completed = await getLessonProgress(user.id, id)
   const firstIncomplete = course.lessons.find((l) => !completed.has(l.id)) ?? course.lessons[0]
+  const allDone = course.lessons.length > 0 && course.lessons.every((l) => completed.has(l.id))
 
   return (
-    <>
-      <Navbar />
-      <main className="flex-1 py-12">
-        <div className="mx-auto max-w-3xl px-6">
-          <Link href="/courses" className="text-sm text-accent hover:underline">← コース一覧</Link>
+    <AppShell subNav>
+      <div className="mx-auto max-w-3xl px-6 py-10 sm:py-12">
+        <Breadcrumb
+          items={[
+            { label: 'コース', href: '/courses' },
+            { label: course.title },
+          ]}
+        />
 
-          <div className="mt-6 rounded-3xl border border-border bg-white p-8">
-            <div className="text-4xl mb-4">{course.icon ?? '📘'}</div>
-            {course.level && (
-              <span className="inline-block rounded-full bg-stone-100 px-2.5 py-0.5 text-xs font-medium text-muted">
-                {course.level}
-              </span>
-            )}
-            <h1 className="mt-3 text-2xl font-bold">{course.title}</h1>
-            <p className="mt-3 text-muted leading-relaxed">{course.description}</p>
-            <div className="mt-6">
-              <ProgressBar value={completed.size} max={course.lessons.length} />
+        <div className="card p-8">
+          <div className="flex items-start gap-4">
+            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-soft text-3xl">
+              {course.icon ?? '📘'}
+            </span>
+            <div className="flex-1">
+              {course.level && (
+                <span className="inline-block rounded-full bg-stone-100 px-2.5 py-0.5 text-xs font-medium text-muted mb-2">
+                  {course.level}
+                </span>
+              )}
+              <h1 className="text-2xl font-bold">{course.title}</h1>
+              <p className="mt-3 text-muted leading-relaxed">{course.description}</p>
             </div>
-            {firstIncomplete && (
-              <Link
-                href={`/courses/${id}/lessons/${firstIncomplete.id}`}
-                className="mt-6 inline-block rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white hover:bg-emerald-700"
-              >
-                {completed.size > 0 ? '学習を続ける' : '学習を始める'}
-              </Link>
-            )}
           </div>
 
-          <h2 className="mt-10 text-lg font-semibold">カリキュラム</h2>
-          <ul className="mt-4 space-y-2">
-            {course.lessons.map((lesson, i) => (
+          <div className="mt-6 pt-6 border-t border-border">
+            <ProgressBar value={completed.size} max={course.lessons.length} />
+          </div>
+
+          {firstIncomplete && (
+            <Link
+              href={`/courses/${id}/lessons/${firstIncomplete.id}`}
+              className="btn-primary mt-6 inline-flex"
+            >
+              {allDone ? '最初から復習する' : completed.size > 0 ? '学習を続ける' : '学習を始める'}
+            </Link>
+          )}
+        </div>
+
+        <h2 className="mt-10 text-lg font-semibold">カリキュラム</h2>
+        <ul className="mt-4 space-y-2">
+          {course.lessons.map((lesson, i) => {
+            const done = completed.has(lesson.id)
+            return (
               <li key={lesson.id}>
                 <Link
                   href={`/courses/${id}/lessons/${lesson.id}`}
-                  className="flex items-center justify-between rounded-xl border border-border bg-white px-4 py-3 hover:border-accent/40 transition-colors"
+                  className="card flex items-center gap-4 px-4 py-3.5 hover:border-emerald-200 transition-colors"
                 >
-                  <span className="text-sm">
-                    <span className="text-muted mr-2">{i + 1}.</span>
-                    {lesson.title}
+                  <span
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
+                      done ? 'bg-accent text-white' : 'bg-stone-100 text-muted'
+                    }`}
+                  >
+                    {done ? '✓' : i + 1}
                   </span>
-                  {completed.has(lesson.id) && <span className="text-xs font-medium text-accent">完了</span>}
+                  <span className="flex-1 text-sm font-medium">{lesson.title}</span>
+                  {lesson.duration_minutes && (
+                    <span className="text-xs text-muted">{lesson.duration_minutes}分</span>
+                  )}
+                  {done && <span className="text-xs font-medium text-accent">完了</span>}
                 </Link>
               </li>
-            ))}
-          </ul>
-        </div>
-      </main>
-      <Footer />
-    </>
+            )
+          })}
+        </ul>
+      </div>
+    </AppShell>
   )
 }

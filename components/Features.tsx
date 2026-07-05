@@ -2,16 +2,16 @@ import { MEMBERSHIP_FEATURES } from '@/lib/site-config'
 
 const features = [
   {
-    title: '会員限定コンテンツ',
-    description: '全コース・全レッスンは有料会員のみ閲覧可能。学習環境を集中して設計しています。',
+    title: 'カリキュラム問題',
+    description: '挨拶・自己紹介・日常会話など、厳選された問題を順番に学べます。',
   },
   {
-    title: '進捗が可視化される',
-    description: 'レッスン完了状況とコース進捗をダッシュボードで確認。続けやすい仕組みです。',
+    title: 'AI 個別問題',
+    description: '学習データに基づき、あなたの弱点に合わせた問題が自動で作成されます。',
   },
   {
-    title: '実践ワーク中心',
-    description: '読むだけで終わらない構成。各レッスンにワークを用意し、定着を支援します。',
+    title: '学習分析',
+    description: '正答率・理解度・弱点分野を記録し、効率的な復習をサポートします。',
   },
 ]
 
@@ -19,9 +19,9 @@ export function Features() {
   return (
     <section id="features" className="border-t border-border bg-white py-20">
       <div className="mx-auto max-w-6xl px-6">
-        <h2 className="text-2xl font-bold tracking-tight">会員制プラットフォームの特徴</h2>
+        <h2 className="text-2xl font-bold tracking-tight">学習の特徴</h2>
         <p className="mt-3 max-w-xl text-muted">
-          無料の断片的な情報ではなく、学び続けるための環境を提供します。
+          英会話クイズと AI サポートで、継続しやすい学習環境を提供します。
         </p>
         <div className="mt-12 grid gap-6 sm:grid-cols-3">
           {features.map((item) => (
@@ -31,11 +31,12 @@ export function Features() {
             </div>
           ))}
         </div>
-        <div className="mt-12 rounded-2xl border border-accent/20 bg-accent-soft p-6">
-          <p className="text-sm font-semibold text-emerald-800 mb-3">有料会員に含まれるもの</p>
+
+        <div className="mt-12 rounded-2xl border border-border p-6">
+          <p className="text-sm font-semibold text-foreground mb-3">有料会員に含まれるもの</p>
           <ul className="grid gap-2 sm:grid-cols-2">
             {MEMBERSHIP_FEATURES.map((f) => (
-              <li key={f} className="flex items-center gap-2 text-sm text-emerald-900">
+              <li key={f} className="flex items-center gap-2 text-sm text-muted">
                 <span className="text-accent">✓</span>
                 {f}
               </li>

@@ -16,6 +16,10 @@ const KEYS = [
   'STRIPE_SECRET_KEY',
   'STRIPE_PRICE_ID',
   'STRIPE_WEBHOOK_SECRET',
+  'DEV_AUTO_LOGIN',
+  'DIFY_API_KEY',
+  'DIFY_API_BASE',
+  'DIFY_APP_TYPE',
 ]
 
 function parseEnv(path: string): Record<string, string> {

@@ -11,7 +11,12 @@ type SessionUser = {
 
 const links = (premium: boolean) => [
   { href: '/dashboard', label: 'マイページ' },
-  ...(premium ? [{ href: '/courses', label: 'コース' }] : [{ href: '/pricing', label: 'プラン加入' }]),
+  ...(premium
+    ? [
+        { href: '/courses', label: 'コース' },
+        { href: '/tutor', label: 'チューター' },
+      ]
+    : [{ href: '/pricing', label: 'プラン加入' }]),
 ]
 
 export function MemberSubNav() {

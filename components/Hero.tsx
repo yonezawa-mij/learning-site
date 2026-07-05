@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { MEMBERSHIP_FEATURES, MEMBERSHIP_PRICE_LABEL, SITE_TAGLINE } from '@/lib/site-config'
+import { MEMBERSHIP_PRICE_LABEL, SITE_TAGLINE } from '@/lib/site-config'
 
 export function Hero() {
   return (
@@ -9,18 +9,23 @@ export function Hero() {
           {SITE_TAGLINE}
         </p>
         <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
-          本気で学ぶ人のための
+          英会話を、
           <br />
-          会員制ラーニング
+          あなたのペースで
         </h1>
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted">
-          体系的なカリキュラム、進捗管理、実践ワークで学びを継続。
-          有料会員だけがすべてのコースとレッスンにアクセスできます。
+          テーマとレベルを指定すると AI が英語の4択クイズを生成。解説は日本語で、サイト内の枠でそのまま回答できます。
         </p>
         <div className="mt-10 flex flex-wrap gap-4">
           <Link
-            href="/pricing"
+            href="#quiz"
             className="rounded-full bg-accent px-6 py-3 text-sm font-medium text-white hover:bg-emerald-700 transition-colors"
+          >
+            クイズを試す
+          </Link>
+          <Link
+            href="/pricing"
+            className="rounded-full border border-border bg-white px-6 py-3 text-sm font-medium hover:bg-stone-50 transition-colors"
           >
             プランを見る
           </Link>
@@ -28,7 +33,7 @@ export function Hero() {
             href="/register"
             className="rounded-full border border-border bg-white px-6 py-3 text-sm font-medium hover:bg-stone-50 transition-colors"
           >
-            無料でアカウント作成
+            アカウント作成
           </Link>
         </div>
         <p className="mt-4 text-sm text-muted">月額 {MEMBERSHIP_PRICE_LABEL} · いつでも解約可能</p>

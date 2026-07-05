@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { CourseLesson } from '@/lib/courses'
+import { QUIZ_SOURCE_META, normalizeQuizSource } from '@/lib/quiz-sources'
 
 type Props = {
   courseId: string
@@ -38,7 +39,14 @@ export function LessonSidebar({ courseId, lessons, currentLessonId, completed }:
                 >
                   {done ? '✓' : i + 1}
                 </span>
-                <span className="line-clamp-2 leading-snug">{lesson.title}</span>
+                <span className="line-clamp-2 leading-snug">
+                  {lesson.lesson_type === 'quiz' && (
+                    <span className="mr-1" title={QUIZ_SOURCE_META[normalizeQuizSource(lesson.quiz_source)].label}>
+                      {QUIZ_SOURCE_META[normalizeQuizSource(lesson.quiz_source)].icon}
+                    </span>
+                  )}
+                  {lesson.title}
+                </span>
               </Link>
             </li>
           )

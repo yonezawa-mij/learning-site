@@ -25,7 +25,7 @@ export default async function PricingPage({ searchParams }: Props) {
         <PageHeader
           eyebrow="Pricing"
           title="有料会員プラン"
-          description="すべてのコース・レッスン・進捗管理機能が利用できます"
+          description="英会話クイズ・AI問題・学習分析など、すべての機能が利用できます。"
         />
 
         {params.canceled === '1' && (

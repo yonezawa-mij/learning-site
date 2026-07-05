@@ -46,6 +46,9 @@ export function Navbar() {
             </>
           ) : (
             <>
+              <Link href="/#ai-learning" className="hover:text-foreground transition-colors">
+                AI学習
+              </Link>
               <Link href="/#features" className="hover:text-foreground transition-colors">
                 特徴
               </Link>

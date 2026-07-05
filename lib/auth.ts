@@ -4,6 +4,7 @@ import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 import { sql } from './db'
 import { ACTIVE_STATUSES } from './stripe'
+import { getOrCreateDevUser, isDevAutoLogin } from './dev-auth'
 
 const COOKIE_NAME = 'learn_session'
 const MAX_AGE = 60 * 60 * 24 * 7
@@ -68,6 +69,10 @@ export type SessionUser = {
 }
 
 export async function getCurrentUser(): Promise<SessionUser | null> {
+  if (isDevAutoLogin()) {
+    return getOrCreateDevUser()
+  }
+
   const userId = await getSessionUserId()
   if (!userId) return null
   const rows = (await sql`
@@ -78,6 +83,7 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
 }
 
 export function userIsPremium(user: Pick<SessionUser, 'subscription_status'> | null): boolean {
+  if (isDevAutoLogin() && user) return true
   if (!user?.subscription_status) return false
   return ACTIVE_STATUSES.includes(user.subscription_status)
 }

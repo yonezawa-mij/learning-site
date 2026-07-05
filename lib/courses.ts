@@ -19,6 +19,10 @@ export type CourseLesson = {
   content: string
   sort_order: number
   duration_minutes: number | null
+  lesson_type: string
+  domain: string | null
+  quiz_source: string
+  quiz_config: string
 }
 
 export type CourseDetail = Course & { lessons: CourseLesson[] }
@@ -50,7 +54,7 @@ export async function getCourseById(id: string): Promise<CourseDetail | null> {
   `) as Course[]
   if (!courses[0]) return null
   const lessons = (await sql`
-    SELECT id, course_id, title, content, sort_order, duration_minutes
+    SELECT id, course_id, title, content, sort_order, duration_minutes, lesson_type, domain, quiz_source, quiz_config
     FROM course_lessons WHERE course_id = ${id}
     ORDER BY sort_order ASC, created_at ASC
   `) as CourseLesson[]
@@ -59,7 +63,7 @@ export async function getCourseById(id: string): Promise<CourseDetail | null> {
 
 export async function getLessonById(courseId: string, lessonId: string): Promise<CourseLesson | null> {
   const rows = (await sql`
-    SELECT id, course_id, title, content, sort_order, duration_minutes
+    SELECT id, course_id, title, content, sort_order, duration_minutes, lesson_type, domain, quiz_source, quiz_config
     FROM course_lessons
     WHERE id = ${lessonId} AND course_id = ${courseId}
   `) as CourseLesson[]

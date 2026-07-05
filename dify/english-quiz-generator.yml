@@ -1,0 +1,112 @@
+app:
+  description: ホームページ連携用の英語クイズ生成API（JSON出力）
+  icon: 🇬🇧
+  icon_background: '#E8F0FE'
+  mode: workflow
+  name: EnglishQuizGenerator
+kind: app
+version: 0.1.5
+workflow:
+  features:
+    file_upload:
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - remote_url
+        - local_file
+    opening_statement: ''
+    retrieval_resource:
+      enabled: false
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    text_to_speech:
+      enabled: false
+  graph:
+    edges:
+    - id: sys-start-llm
+      source: sys-start
+      sourceHandle: output
+      target: llm
+      targetHandle: input
+    - id: llm-sys-end
+      source: llm
+      sourceHandle: output
+      target: sys-end
+      targetHandle: input
+    nodes:
+    - data:
+        desc: ''
+        selected: false
+        title: 開始
+        type: start
+        variables:
+        - label: 英語クイズのテーマ・レベル
+          max_length: 48
+          options: []
+          required: true
+          type: text-input
+          variable: query
+      id: sys-start
+      position:
+        x: 80
+        y: 200
+      type: custom
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: gpt-4o-mini
+          provider: openai
+        prompt_template:
+        - id: sys-prompt
+          role: system
+          text: |
+            You are an excellent English teacher and test creator.
+            Based on the theme, topic, or English level specified by the user, create ONE 4-option multiple-choice English quiz question.
+
+            Requirements:
+            1. The quiz question and its choices MUST be written in English.
+            2. The explanation should be written in Japanese so that learners can understand it easily.
+
+            Your output must strictly follow the JSON format below. Do NOT wrap the output in markdown code blocks like "```json". Do NOT include any greetings, prefaces, or extra text. Output only the raw JSON string.
+
+            {
+              "question": "[Write the English quiz question here]",
+              "choices": ["Option 1", "Option 2", "Option 3", "Option 4"],
+              "answer_index": [Correct option index as a number from 0 to 3],
+              "explanation": "[Write the explanation in Japanese here]"
+            }
+        - id: user-prompt
+          role: user
+          text: 'Theme / Level: {{#sys-start.query#}}'
+        selected: false
+        title: LLM
+        type: llm
+      id: llm
+      position:
+        x: 320
+        y: 200
+      type: custom
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - llm
+          - text
+          variable: text
+        selected: false
+        title: 終了
+        type: end
+      id: sys-end
+      position:
+        x: 560
+        y: 200
+      type: custom

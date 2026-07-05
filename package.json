@@ -8,7 +8,11 @@
     "start": "next start",
     "lint": "eslint",
     "db:migrate": "tsx scripts/db-migrate.ts",
-    "db:seed": "tsx scripts/seed-courses.ts",
+    "db:migrate:quiz": "tsx scripts/db-migrate-quiz.ts",
+    "db:migrate:quiz-sources": "tsx scripts/db-migrate-quiz-sources.ts",
+    "db:migrate:learning": "tsx scripts/db-migrate-learning.ts",
+    "db:seed": "tsx scripts/seed-courses.ts && tsx scripts/seed-english-quiz.ts",
+    "db:seed:english": "tsx scripts/seed-english-quiz.ts",
     "setup:db": "tsx scripts/setup-db.ts",
     "setup:stripe": "tsx scripts/setup-stripe.ts",
     "setup:vercel": "tsx scripts/sync-vercel-env.ts"

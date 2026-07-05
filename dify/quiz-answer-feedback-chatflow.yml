@@ -1,0 +1,205 @@
+app:
+  description: |
+    learning-site クイズ回答フィードバック用 Chatflow。
+    正誤判定後の解説・励まし・次の焦点を JSON で返します。
+  icon: "✅"
+  icon_background: '#D1E9FF'
+  mode: advanced-chat
+  name: Quiz Answer Feedback
+kind: app
+version: 0.3.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+          - local_file
+          - remote_url
+    opening_statement: ''
+    retriever_resource:
+      enabled: false
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+      - data:
+          isInIteration: false
+          sourceType: start
+          targetType: llm
+        id: start-llm
+        source: '200001'
+        sourceHandle: source
+        target: '200002'
+        targetHandle: target
+        type: custom
+        zIndex: 0
+      - data:
+          isInIteration: false
+          sourceType: llm
+          targetType: answer
+        id: llm-answer
+        source: '200002'
+        sourceHandle: source
+        target: '200003'
+        targetHandle: target
+        type: custom
+        zIndex: 0
+    nodes:
+      - data:
+          desc: ''
+          selected: false
+          title: Start
+          type: start
+          variables:
+            - label: 問題文
+              max_length: 2000
+              options: []
+              required: true
+              type: paragraph
+              variable: question
+            - label: 正解
+              max_length: 500
+              options: []
+              required: true
+              type: text-input
+              variable: correct_answer
+            - label: ユーザーの回答
+              max_length: 500
+              options: []
+              required: true
+              type: text-input
+              variable: user_answer
+            - label: 正解か（true/false）
+              max_length: 10
+              options: []
+              required: true
+              type: text-input
+              variable: is_correct
+            - label: 解説
+              max_length: 2000
+              options: []
+              required: false
+              type: paragraph
+              variable: explanation
+            - label: 次の問題へのつなぎ
+              max_length: 1000
+              options: []
+              required: false
+              type: paragraph
+              variable: next_bridge
+        height: 280
+        id: '200001'
+        position:
+          x: 80
+          y: 280
+        positionAbsolute:
+          x: 80
+          y: 280
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        type: custom
+        width: 244
+      - data:
+          context:
+            enabled: false
+            variable_selector: []
+          desc: ''
+          memory:
+            window:
+              enabled: false
+              size: 10
+          model:
+            completion_params:
+              frequency_penalty: 0
+              max_tokens: 1024
+              presence_penalty: 0
+              response_format: json_object
+              temperature: 0.4
+              top_p: 1
+            mode: chat
+            name: gpt-4o-mini
+            provider: openai
+          prompt_template:
+            - id: feedback-system-prompt
+              role: system
+              text: |
+                あなたは日本人向け英会話クイズのチューターです。回答結果に対するフィードバックを JSON のみで返してください。
+
+                ## 入力
+                - 問題文: {{#200001.question#}}
+                - 正解: {{#200001.correct_answer#}}
+                - ユーザーの回答: {{#200001.user_answer#}}
+                - 正解か: {{#200001.is_correct#}}
+                - 解説: {{#200001.explanation#}}
+                - 次の問題へのつなぎ: {{#200001.next_bridge#}}
+
+                ## 出力形式（厳守・JSON のみ）
+                {"score":0,"feedback":"...","encouragement":"...","nextFocus":"..."}
+
+                - score: 0〜100 の理解度スコア
+                - feedback: 日本語 3〜5 文。正誤の理由と用法の説明
+                - encouragement: 短い励まし（1〜2 文）
+                - nextFocus: 次に意識すべきポイント（任意、空文字可）
+
+                説明文・Markdown・コードフェンスは付けないこと。
+          selected: true
+          title: Feedback LLM
+          type: llm
+          variables: []
+          vision:
+            enabled: false
+        height: 120
+        id: '200002'
+        position:
+          x: 400
+          y: 280
+        positionAbsolute:
+          x: 400
+          y: 280
+        selected: true
+        sourcePosition: right
+        targetPosition: left
+        type: custom
+        width: 244
+      - data:
+          answer: '{{#200002.text#}}'
+          desc: ''
+          selected: false
+          title: Answer
+          type: answer
+          variables:
+            - value_selector:
+                - '200002'
+                - text
+              variable: text
+        height: 105
+        id: '200003'
+        position:
+          x: 720
+          y: 280
+        positionAbsolute:
+          x: 720
+          y: 280
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        type: custom
+        width: 244
+    viewport:
+      x: 0
+      y: 0
+      zoom: 1

@@ -1,0 +1,213 @@
+app:
+  description: |
+    learning-site 英会話チューター用 Chatflow。
+    学習者の質問にソクラテス式で返答します。API 経由でサイト内 TutorChat から呼び出す想定。
+  icon: "🎓"
+  icon_background: '#E4FBCC'
+  mode: advanced-chat
+  name: English Tutor Q&A
+kind: app
+version: 0.3.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+          - local_file
+          - remote_url
+    opening_statement: |
+      こんにちは！英会話学習の AI チューターです。
+      クイズの意味・用法、復習の仕方、なぜその答えになるのか — なんでも質問してください。
+      答えを直接教えるより、一緒に考える形でサポートします。
+    retriever_resource:
+      enabled: false
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions:
+      - 弱点分野を教えて
+      - 復習のコツは？
+      - なぜそうなるのか一緒に考えて
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+      - data:
+          isInIteration: false
+          sourceType: start
+          targetType: llm
+        id: start-llm
+        source: '100001'
+        sourceHandle: source
+        target: '100002'
+        targetHandle: target
+        type: custom
+        zIndex: 0
+      - data:
+          isInIteration: false
+          sourceType: llm
+          targetType: answer
+        id: llm-answer
+        source: '100002'
+        sourceHandle: source
+        target: '100003'
+        targetHandle: target
+        type: custom
+        zIndex: 0
+    nodes:
+      - data:
+          desc: ''
+          selected: false
+          title: Start
+          type: start
+          variables:
+            - label: レッスン名
+              max_length: 200
+              options: []
+              required: false
+              type: text-input
+              variable: lesson_title
+            - label: 分野
+              max_length: 100
+              options: []
+              required: false
+              type: text-input
+              variable: domain
+            - label: 正答率（%）
+              max_length: 10
+              options: []
+              required: false
+              type: text-input
+              variable: overall_accuracy
+            - label: 平均理解度
+              max_length: 10
+              options: []
+              required: false
+              type: text-input
+              variable: avg_understanding
+            - label: 弱点分野
+              max_length: 500
+              options: []
+              required: false
+              type: text-input
+              variable: weak_domains
+        height: 200
+        id: '100001'
+        position:
+          x: 80
+          y: 280
+        positionAbsolute:
+          x: 80
+          y: 280
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        type: custom
+        width: 244
+      - data:
+          context:
+            enabled: false
+            variable_selector: []
+          desc: ''
+          memory:
+            query_prompt_template: '{{#sys.query#}}'
+            role_prefix:
+              assistant: ''
+              user: ''
+            window:
+              enabled: true
+              size: 20
+          model:
+            completion_params:
+              frequency_penalty: 0
+              max_tokens: 1024
+              presence_penalty: 0
+              temperature: 0.6
+              top_p: 1
+            mode: chat
+            name: gpt-4o-mini
+            provider: openai
+          prompt_template:
+            - id: tutor-system-prompt
+              role: system
+              text: |
+                あなたは日本人向け英会話学習の AI チューターです。learning-site 内のチャット UI から呼び出されています。
+
+                ## 役割
+                - 学習者の質問に日本語で返答する（2〜5文、必要なら箇条書き可）
+                - ソクラテス式：クイズの答えを直接教えず、考え方を導く
+                - 「なぜそうなるのか」を対話で深める
+                - 励まし、具体的で簡潔に
+
+                ## 学習者データ
+                - レッスン: {{#100001.lesson_title#}}
+                - 分野: {{#100001.domain#}}
+                - 正答率: {{#100001.overall_accuracy#}}%
+                - 平均理解度: {{#100001.avg_understanding#}}
+                - 弱点分野: {{#100001.weak_domains#}}
+
+                ## ルール
+                1. クイズの正解をそのまま教えない（ヒント・考え方・用法の説明は OK）
+                2. 弱点分野がある場合は復習アドバイスに活かす
+                3. 英語フレーズを示すときは短い例文を添える
+                4. 挨拶や「Dify について」などメタ的な話は避ける
+                5. わからない場合は正直に伝え、考え方の手がかりを出す
+
+                ユーザーの質問:
+                {{#sys.query#}}
+          selected: true
+          title: Tutor LLM
+          type: llm
+          variables: []
+          vision:
+            enabled: false
+        height: 120
+        id: '100002'
+        position:
+          x: 400
+          y: 280
+        positionAbsolute:
+          x: 400
+          y: 280
+        selected: true
+        sourcePosition: right
+        targetPosition: left
+        type: custom
+        width: 244
+      - data:
+          answer: '{{#100002.text#}}'
+          desc: ''
+          selected: false
+          title: Answer
+          type: answer
+          variables:
+            - value_selector:
+                - '100002'
+                - text
+              variable: text
+        height: 105
+        id: '100003'
+        position:
+          x: 720
+          y: 280
+        positionAbsolute:
+          x: 720
+          y: 280
+        selected: false
+        sourcePosition: right
+        targetPosition: left
+        type: custom
+        width: 244
+    viewport:
+      x: 0
+      y: 0
+      zoom: 1

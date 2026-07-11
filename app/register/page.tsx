@@ -15,7 +15,7 @@ function RegisterForm() {
   return (
     <div className="card w-full max-w-md p-8 sm:p-10">
       <h1 className="text-2xl font-bold">会員登録</h1>
-      <p className="mt-2 text-sm text-muted">{SITE_NAME} の無料アカウントを作成</p>
+      <p className="mt-2 text-sm text-muted">{SITE_NAME}（英会話）の無料アカウントを作成</p>
 
       {state?.error && (
         <div className="mt-5 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
-import { generateDifyQuizFromQuery, getDifyConfig } from '@/lib/dify-quiz'
+import { getCurrentUser } from '@/lib/auth'
+import { buildDifyPersonalization } from '@/lib/dify-personalized'
+import { generateDifyQuizFromQuery, getDifyConfig, clampDifyInputs } from '@/lib/dify-quiz'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,15 +15,36 @@ export async function POST(req: Request) {
   }
 
   let query = 'Daily conversation, beginner'
+  let history = ''
+  let weaknesses = ''
+
   try {
-    const body = (await req.json()) as { query?: string }
+    const body = (await req.json()) as {
+      query?: string
+      history?: string
+      weaknesses?: string
+    }
     if (body.query?.trim()) query = body.query.trim().slice(0, 200)
+    if (body.history?.trim()) history = body.history.trim().slice(0, 2000)
+    if (body.weaknesses?.trim()) weaknesses = body.weaknesses.trim().slice(0, 500)
   } catch {
-    // use default
+    // use defaults
   }
 
-  const userId = `home-${Date.now()}`
-  const { question, error } = await generateDifyQuizFromQuery(query, userId)
+  const user = await getCurrentUser()
+  const userId = user?.id ?? `home-${Date.now()}`
+
+  if (user && !history && !weaknesses) {
+    const p = await buildDifyPersonalization(user.id)
+    history = p.history
+    weaknesses = p.weaknesses
+  }
+
+  const { question, error } = await generateDifyQuizFromQuery(
+    clampDifyInputs({ query, history, weaknesses, mode: 'quiz' }).query,
+    userId,
+    { history, weaknesses },
+  )
   if (!question || error) {
     return NextResponse.json({ error: error ?? '問題を生成できませんでした。' }, { status: 502 })
   }

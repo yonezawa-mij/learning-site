@@ -139,3 +139,25 @@ body {
   font-size: 0.875rem;
   line-height: 1.6;
 }
+
+@keyframes quiz-correct-flash {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.5); }
+  40% { transform: scale(1.02); box-shadow: 0 0 0 12px rgba(5, 150, 105, 0); }
+  100% { transform: scale(1); }
+}
+
+@keyframes quiz-wrong-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+.quiz-feedback-correct {
+  animation: quiz-correct-flash 0.6s ease-out;
+}
+
+.quiz-feedback-wrong {
+  animation: quiz-wrong-shake 0.5s ease-out;
+}

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { AuthNav } from './AuthNav'
-import { SITE_NAME } from '@/lib/site-config'
+import { SITE_NAME, SITE_LABEL } from '@/lib/site-config'
 
 type SessionUser = {
   name: string
@@ -25,8 +25,15 @@ export function Navbar() {
   return (
     <header className="border-b border-border bg-white/95 backdrop-blur-md sticky top-0 z-50">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <Link href={loggedIn ? '/dashboard' : '/'} className="text-lg font-semibold tracking-tight text-foreground">
-          {SITE_NAME}
+        <Link
+          href={loggedIn ? '/dashboard' : '/'}
+          className="flex items-center gap-2 text-lg font-semibold tracking-tight text-foreground"
+        >
+          <span aria-hidden>🇬🇧</span>
+          <span>
+            {SITE_NAME}
+            <span className="ml-2 hidden text-xs font-medium text-accent sm:inline">{SITE_LABEL}</span>
+          </span>
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm text-muted">
           {loggedIn ? (

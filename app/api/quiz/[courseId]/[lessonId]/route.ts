@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 import { getCourseById, getLessonById } from '@/lib/courses'
 import { getQuizQuestions, getQuizAttempts } from '@/lib/quiz'
-import { ensureQuizQuestions } from '@/lib/quiz-orchestrator'
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 60
 
 export async function GET(
   _request: Request,
@@ -17,8 +17,6 @@ export async function GET(
   const course = await getCourseById(courseId)
   const lesson = course?.lessons.find((l) => l.id === lessonId)
   if (!lesson) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-
-  await ensureQuizQuestions(user.id, lesson)
 
   const questions = await getQuizQuestions(lessonId, user.id)
   const attempts = await getQuizAttempts(user.id, lessonId)

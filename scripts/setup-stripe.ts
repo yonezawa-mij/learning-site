@@ -89,7 +89,7 @@ async function ensurePrice() {
   }
 
   const product = await stripe.products.create({
-    name: 'Learning 有料会員',
+    name: 'EnglishLearn 有料会員',
     description: '全コース・全レッスンへのアクセス（月額 ¥1,980）',
     metadata: { project: 'learning-site' },
   })

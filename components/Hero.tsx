@@ -1,20 +1,20 @@
 import Link from 'next/link'
-import { MEMBERSHIP_PRICE_LABEL, SITE_TAGLINE } from '@/lib/site-config'
+import { MEMBERSHIP_PRICE_LABEL, SITE_LABEL, SITE_TAGLINE } from '@/lib/site-config'
 
 export function Hero() {
   return (
     <section className="mx-auto max-w-6xl px-6 pt-20 pb-16">
       <div className="max-w-3xl">
         <p className="mb-4 text-sm font-medium tracking-wide text-accent uppercase">
-          {SITE_TAGLINE}
+          {SITE_LABEL} · {SITE_TAGLINE}
         </p>
         <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
-          英会話を、
+          英会話・英語を、
           <br />
           あなたのペースで
         </h1>
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted">
-          テーマとレベルを指定すると AI が英語の4択クイズを生成。解説は日本語で、サイト内の枠でそのまま回答できます。
+          定番の固定クイズですぐ試せます。テーマを指定すれば AI が英語の4択問題も生成。解説は日本語で、その場で回答できます。
         </p>
         <div className="mt-10 flex flex-wrap gap-4">
           <Link

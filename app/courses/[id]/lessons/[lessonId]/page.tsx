@@ -10,12 +10,12 @@ import { QuizSourceBadge } from '@/components/QuizSourceBadge'
 import { requirePremium } from '@/lib/guards'
 import { getCourseById, getLessonById, getLessonProgress } from '@/lib/courses'
 import { getQuizQuestions, getQuizAttempts } from '@/lib/quiz'
-import { ensureQuizQuestions } from '@/lib/quiz-orchestrator'
 import { normalizeQuizSource } from '@/lib/quiz-sources'
 import { getTutorMessages } from '@/lib/tutor'
 import { completeLessonAction } from '@/app/actions/platform'
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 60
 
 export default async function LessonPage({
   params,
@@ -39,12 +39,8 @@ export default async function LessonPage({
 
   let quizProps = null
   let quizMeta = null
-  let generateError: string | null = null
 
   if (isQuiz) {
-    const ensure = await ensureQuizQuestions(user.id, lesson)
-    generateError = ensure.error ?? null
-
     const questions = await getQuizQuestions(lessonId, user.id)
     const attempts = await getQuizAttempts(user.id, lessonId)
     let currentOrder = 1
@@ -100,11 +96,6 @@ export default async function LessonPage({
           {isQuiz && quizProps ? (
             <div className="space-y-6">
               {quizMeta && <QuizSourceBadge source={quizMeta.source} />}
-              {generateError && (
-                <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                  {generateError}
-                </div>
-              )}
               <QuizPlayer
                 courseId={id}
                 lessonId={lessonId}

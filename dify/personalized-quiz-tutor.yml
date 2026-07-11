@@ -1,0 +1,94 @@
+app:
+  description: 個別最適化英語クイズ＆主体的な対話を促すAI学習アシスタント（history/weaknesses/mode対応）
+  icon: 🎯
+  icon_background: '#EDE9FE'
+  mode: workflow
+  name: PersonalizedQuizTutor
+kind: app
+version: 0.1.6
+workflow:
+  graph:
+    edges:
+    - id: start-llm
+      source: sys-start
+      sourceHandle: output
+      target: llm
+      targetHandle: input
+    - id: llm-end
+      source: llm
+      sourceHandle: output
+      target: sys-end
+      targetHandle: input
+    nodes:
+    - data:
+        title: 開始
+        type: start
+        variables:
+        - label: 英語クイズのテーマ
+          type: text-input
+          variable: query
+          required: true
+          max_length: 48
+        - label: 学習履歴データ
+          type: paragraph
+          variable: history
+          required: false
+          max_length: 1000
+        - label: 分析された苦手傾向
+          type: text-input
+          variable: weaknesses
+          required: false
+          max_length: 256
+        - label: モード(quizまたはchat)
+          type: text-input
+          variable: mode
+          required: true
+          max_length: 10
+        - label: ユーザーからの追加質問
+          type: paragraph
+          variable: user_message
+          required: false
+          max_length: 512
+      id: sys-start
+      type: custom
+    - data:
+        title: LLM
+        type: llm
+        model:
+          provider: openai
+          name: gpt-4o-mini
+          mode: chat
+        prompt_template:
+        - role: system
+          text: |
+            You are an excellent English teacher and AI tutor.
+            You MUST follow the Selected Mode exactly.
+
+            Always output raw JSON only (no markdown fences):
+            {"question":"...","choices":["A","B","C","D"],"answer_index":0,"explanation":"..."}
+
+            Rules:
+            - If Selected Mode is "quiz": create ONE new 4-choice English multiple-choice question.
+              Fill question, choices (4 items), answer_index (0-3), and explanation (Japanese).
+            - If Selected Mode is "chat": do NOT create a quiz. Set question to "" and choices to [].
+              answer_index to -1. Put your tutoring reply in explanation (Japanese, encouraging, detailed).
+              Use History and User message to answer the learner's question about the current problem.
+        - role: user
+          text: |
+            Selected Mode: {{#sys-start.mode#}}
+            Theme: {{#sys-start.query#}}
+            History: {{#sys-start.history#}}
+            Weaknesses: {{#sys-start.weaknesses#}}
+            User message: {{#sys-start.user_message#}}
+      id: llm
+      type: custom
+    - data:
+        title: 終了
+        type: end
+        outputs:
+        - variable: text
+          value_selector:
+          - llm
+          - text
+      id: sys-end
+      type: custom

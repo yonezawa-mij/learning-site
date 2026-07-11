@@ -2,10 +2,12 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { AppShell } from '@/components/AppShell'
 import { Breadcrumb } from '@/components/Breadcrumb'
-import { ProgressBar } from '@/components/ProgressBar'
+import { QuizProgressHero } from '@/components/QuizProgressHero'
 import { QuizTrackColumns } from '@/components/QuizTrackColumns'
+import { DomainBarChart } from '@/components/DomainBarChart'
 import { requirePremium } from '@/lib/guards'
 import { getCourseById, getLessonProgress } from '@/lib/courses'
+import { getCourseDomainStats, getCourseLearningStats, getCourseLessonStats } from '@/lib/quiz-analytics'
 import { normalizeQuizSource } from '@/lib/quiz-sources'
 
 export const dynamic = 'force-dynamic'
@@ -16,7 +18,13 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
   const course = await getCourseById(id)
   if (!course) notFound()
 
-  const completed = await getLessonProgress(user.id, id)
+  const [completed, stats, lessonStats, domainStats] = await Promise.all([
+    getLessonProgress(user.id, id),
+    getCourseLearningStats(user.id, id),
+    getCourseLessonStats(user.id, id),
+    getCourseDomainStats(user.id, id),
+  ])
+
   const fixedLessons = course.lessons.filter((l) => normalizeQuizSource(l.quiz_source) === 'fixed')
   const difyLessons = course.lessons.filter((l) => normalizeQuizSource(l.quiz_source) === 'dify')
   const firstFixed = fixedLessons.find((l) => !completed.has(l.id))
@@ -32,52 +40,61 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
           ]}
         />
 
-        <div className="card p-8 mb-8">
-          <div className="flex items-start gap-4">
-            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-soft text-3xl">
-              {course.icon ?? '🇬🇧'}
-            </span>
-            <div className="flex-1">
-              {course.level && (
-                <span className="inline-block rounded-full bg-stone-100 px-2.5 py-0.5 text-xs font-medium text-muted mb-2">
-                  {course.level}
-                </span>
-              )}
-              <h1 className="text-2xl font-bold">{course.title}</h1>
-              <p className="mt-3 text-muted leading-relaxed">{course.description}</p>
-            </div>
-          </div>
-
-          <div className="mt-6 pt-6 border-t border-border">
-            <ProgressBar value={completed.size} max={course.lessons.length} />
-            <p className="mt-2 text-xs text-muted">
-              {completed.size}/{course.lessons.length} セット完了
-            </p>
-          </div>
-
-          {(firstFixed || firstDify) && (
-            <div className="mt-6 flex flex-wrap gap-3">
-              {firstFixed && (
-                <Link
-                  href={`/courses/${id}/lessons/${firstFixed.id}`}
-                  className="btn-primary !py-2.5 !px-5"
-                >
-                  カリキュラムを始める
-                </Link>
-              )}
-              {firstDify && (
-                <Link
-                  href={`/courses/${id}/lessons/${firstDify.id}`}
-                  className="btn-secondary !py-2.5 !px-5"
-                >
-                  AI問題に挑戦
-                </Link>
-              )}
-            </div>
-          )}
+        <div className="mt-6">
+          <QuizProgressHero
+            title={course.title}
+            icon={course.icon}
+            level={course.level}
+            description={course.description}
+            stats={stats}
+            completedLessons={completed.size}
+            totalLessons={course.lessons.length}
+          />
         </div>
 
-        <QuizTrackColumns courseId={id} lessons={course.lessons} completed={completed} />
+        {(firstFixed || firstDify) && (
+          <div className="mt-6 flex flex-wrap gap-3">
+            {firstFixed && (
+              <Link href={`/courses/${id}/lessons/${firstFixed.id}`} className="btn-primary !py-3 !px-6 text-base">
+                カリキュラムを続ける →
+              </Link>
+            )}
+            {firstDify && (
+              <Link
+                href={`/courses/${id}/lessons/${firstDify.id}`}
+                className="btn-secondary !py-3 !px-6 text-base"
+              >
+                AI問題に挑戦 →
+              </Link>
+            )}
+          </div>
+        )}
+
+        {domainStats.length > 0 && (
+          <div className="card p-6 sm:p-8 mt-8">
+            <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-accent">実績</p>
+                <h2 className="mt-1 text-xl font-bold">分野別の得意・不得意</h2>
+              </div>
+              <p className="text-4xl font-bold tabular-nums text-accent">
+                {stats.overall_accuracy}%
+                <span className="ml-2 text-sm font-medium text-muted">総合正答率</span>
+              </p>
+            </div>
+            <DomainBarChart stats={domainStats} />
+          </div>
+        )}
+
+        <div className="mt-10">
+          <h2 className="text-xl font-bold mb-5">セットを選ぶ</h2>
+          <QuizTrackColumns
+            courseId={id}
+            lessons={course.lessons}
+            completed={completed}
+            lessonStats={lessonStats}
+          />
+        </div>
       </div>
     </AppShell>
   )

@@ -53,14 +53,17 @@ async function countUserQuestions(userId: string, lessonId: string): Promise<num
   return rows[0]?.c ?? 0
 }
 
+/** Dify 1問あたり十数秒かかるため、1リクエスト内の生成数に上限を設ける */
+const DIFY_GENERATION_CAP = 4
+
 export async function ensureQuizQuestions(
   userId: string,
   lesson: QuizLessonContext,
-  options?: { force?: boolean },
+  options?: { force?: boolean; autoGenerate?: boolean },
 ): Promise<{ source: QuizSource; generated: boolean; error?: string }> {
   const source = normalizeQuizSource(lesson.quiz_source)
   const config = parseQuizConfig(lesson.quiz_config)
-  const count = config.question_count ?? 8
+  const count = Math.min(config.question_count ?? 8, DIFY_GENERATION_CAP)
 
   if (source === 'fixed') {
     return { source, generated: false }
@@ -68,8 +71,13 @@ export async function ensureQuizQuestions(
 
   const existing = await countUserQuestions(userId, lesson.id)
   const force = options?.force ?? false
+  const autoGenerate = options?.autoGenerate ?? false
 
   if (existing > 0 && !force) {
+    return { source, generated: false }
+  }
+
+  if (existing === 0 && !force && !autoGenerate) {
     return { source, generated: false }
   }
 

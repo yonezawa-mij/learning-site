@@ -11,7 +11,8 @@ const notoSansJP = Noto_Sans_JP({
 
 export const metadata: Metadata = {
   title: `${SITE_NAME} — ${SITE_TAGLINE}`,
-  description: '有料会員制のオンライン学習プラットフォーム。体系的なコースと進捗管理で学びを継続。',
+  description:
+    '英会話・英語学習専門のオンラインサイト。固定クイズとAI問題、即時フィードバック、学習チューターで英語力を伸ばします。',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

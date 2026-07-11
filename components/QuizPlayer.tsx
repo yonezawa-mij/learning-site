@@ -2,8 +2,11 @@
 
 import { useCallback, useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { submitQuizAnswerAction, regenerateQuizAction, type QuizAnswerResult } from '@/app/actions/quiz'
+import { submitQuizAnswerAction, type QuizAnswerResult } from '@/app/actions/quiz'
 import type { QuizSource } from '@/lib/quiz-sources'
+import { QuizDialogue } from '@/components/QuizDialogue'
+import { WeaknessTags } from '@/components/WeaknessTags'
+import { recordLocalAttempt } from '@/lib/learning-local-store'
 
 type QuizQuestionView = {
   id: string
@@ -52,6 +55,7 @@ export function QuizPlayer({
   const [result, setResult] = useState<QuizAnswerResult | null>(null)
   const [pending, startTransition] = useTransition()
   const [regenerating, setRegenerating] = useState(false)
+  const [feedbackAnim, setFeedbackAnim] = useState<'correct' | 'wrong' | null>(null)
 
   const current = questions.find((q) => q.sort_order === currentOrder)
   const total = questions.length
@@ -91,6 +95,12 @@ export function QuizPlayer({
     startTransition(async () => {
       const res = await submitQuizAnswerAction(courseId, lessonId, current.id, finalAnswer)
       setResult(res)
+      setFeedbackAnim(res.isCorrect ? 'correct' : 'wrong')
+      recordLocalAttempt({
+        question: current.question,
+        theme: domain ?? title,
+        isCorrect: Boolean(res.isCorrect),
+      })
       await refreshFromServer()
     })
   }
@@ -99,24 +109,30 @@ export function QuizPlayer({
     if (!confirm('新しい問題セットを生成します。現在の進捗はリセットされます。')) return
     setRegenerating(true)
     startTransition(async () => {
-      const res = await regenerateQuizAction(courseId, lessonId)
-      setRegenerating(false)
-      if (res.error) {
-        alert(res.error)
-        return
+      try {
+        const res = await fetch(`/api/quiz/${courseId}/${lessonId}/generate`, { method: 'POST' })
+        const data = (await res.json()) as { error?: string }
+        if (!res.ok || data.error) {
+          alert(data.error ?? '問題を生成できませんでした。しばらく経ってから再度お試しください。')
+          return
+        }
+        router.refresh()
+      } catch {
+        alert('サーバーに接続できませんでした。ページを再読み込みして再度お試しください。')
+      } finally {
+        setRegenerating(false)
       }
-      router.refresh()
     })
   }
 
   if (questions.length === 0 && !pending && !regenerating) {
     return (
       <div className="card p-8 text-center">
-        <h2 className="text-xl font-bold">問題を準備しています</h2>
-        <p className="mt-2 text-sm text-muted">少々お待ちください</p>
+        <h2 className="text-xl font-bold">AI問題を生成しましょう</h2>
+        <p className="mt-2 text-sm text-muted">ボタンを押すと、あなた向けの問題が作成されます（数十秒かかる場合があります）</p>
         {canRegenerate && (
           <button type="button" onClick={handleRegenerate} className="btn-primary mt-6" disabled={regenerating}>
-            {regenerating ? '生成中...' : '問題を生成する'}
+            {regenerating ? '生成中...（数十秒かかる場合があります）' : '問題を生成する'}
           </button>
         )}
       </div>
@@ -175,6 +191,8 @@ export function QuizPlayer({
         </div>
 
         <h2 className="mt-4 text-lg font-bold">{title}</h2>
+
+        <WeaknessTags serverWeaknesses={domain ? [domain] : []} className="mt-3" />
 
         {current.bridge_text && currentOrder > 1 && (
           <p className="mt-3 text-sm text-muted border-l-2 border-accent pl-3">{current.bridge_text}</p>
@@ -235,9 +253,9 @@ export function QuizPlayer({
             <div
               className={`rounded-xl border p-4 ${
                 (result?.isCorrect ?? prevAnswered?.is_correct)
-                  ? 'border-emerald-200 bg-accent-soft'
-                  : 'border-amber-200 bg-amber-50'
-              }`}
+                  ? 'border-emerald-200 bg-accent-soft quiz-feedback-correct'
+                  : 'border-amber-200 bg-amber-50 quiz-feedback-wrong'
+              } ${feedbackAnim === 'correct' ? 'quiz-feedback-correct' : feedbackAnim === 'wrong' ? 'quiz-feedback-wrong' : ''}`}
             >
               <p className="text-sm font-semibold">
                 {(result?.isCorrect ?? prevAnswered?.is_correct) ? '✓ 正解' : '✗ 不正解'}
@@ -273,6 +291,14 @@ export function QuizPlayer({
           </div>
         )}
       </div>
+
+      {(showingResult || prevAnswered) && (
+        <QuizDialogue
+          question={current.question}
+          theme={domain ?? title}
+          explanation={result?.feedback?.split('\n\n')[0] ?? prevAnswered?.ai_feedback?.split('\n\n')[0]}
+        />
+      )}
 
       <div className="flex gap-1">
         {questions.map((q) => (
